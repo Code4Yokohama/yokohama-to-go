@@ -8,7 +8,7 @@
 yarn
 ```
 
-###　環境設定
+### 環境設定
 
 ```sh
 cp .env.sample .env
