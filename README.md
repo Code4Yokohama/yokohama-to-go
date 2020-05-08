@@ -1,24 +1,34 @@
-# YOKOHAMA to GO
+# テイクアウトとデリバリ情報 (YOKOHAMA to GO)
 
-## Project setup
-```
+ご自由にForkしてお使いください。
+
+## プロジェクトのセットアップ
+
+```sh
 yarn
 ```
 
-### Compiles and hot-reloads for development
+###　環境設定
+
+```sh
+cp .env.sample .env
+(必要に応じて書き換え)
 ```
+
+### 開発サーバーの起動
+
+```sh
 npm run serve
 ```
 
-### Compiles and minifies for production
-```
+### 本番サーバー用に静的ファイルのビルド
+
+```sh
 npm run build
 ```
 
-### Lints and fixes files
-```
+### Lint の実行
+
+```sh
 npm run lint
 ```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
