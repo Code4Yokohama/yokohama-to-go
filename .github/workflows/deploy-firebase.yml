@@ -20,7 +20,7 @@ jobs:
         run: echo "${{ secrets.ENV_PRODUCTION }}" > .env
         if: endsWith(github.ref, '/production')
       - name: Build
-        run: vue-cli-service build
+        run: npm run build
       - name: Archive Production Artifact
         uses: actions/upload-artifact@master
         with:
