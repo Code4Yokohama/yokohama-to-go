@@ -10,7 +10,7 @@
           />
         </router-link>
         <p v-if="$route.name === 'area_index'" class="district">
-          {{ $route.params["name"] }}
+          {{ $route.params.area }}
         </p>
       </div>
       <div v-if="isMobile" class="side_menu__section display">
@@ -43,14 +43,23 @@
         >
       </section>
       <section class="side_menu__section other_area">
-        <h3 class="section_heading">エリア</h3>
+        <h3 class="section_heading">商店会</h3>
         <router-link
-          v-for="(point, i) in area"
-          :key="i"
-          :to="{ name: 'area_index', params: { name: point } }"
-          :title="'エリア：' + point + 'に移動します'"
+          v-for="a in supportedAreaServed"
+          :key="a"
+          :to="{ name: 'area_served_index', params: { area: a } }"
+          :title="'エリア：' + a + 'に移動します'"
         >
-          {{ point }}
+          {{ a }}
+        </router-link>
+        <h3 class="section_heading" :style="{ marginTop: '20px' }">エリア</h3>
+        <router-link
+          v-for="a in supportedAreas"
+          :key="a"
+          :to="{ name: 'area_index', params: { area: a } }"
+          :title="'エリア：' + a + 'に移動します'"
+        >
+          {{ a }}
         </router-link>
       </section>
       <section class="side_menu__section share">
@@ -116,29 +125,12 @@
 </template>
 
 <script>
+import { supportedAreas, supportedAreaServed } from "../util";
 export default {
   name: "SideMenu",
   data: () => ({
-    area: [
-      "青葉区",
-      "神奈川区",
-      "金沢区",
-      "中区",
-      "戸塚区",
-      "鶴見区",
-      "港北区",
-      "保土ケ谷区",
-      "西区",
-      "南区",
-      "磯子区",
-      "栄区",
-      "港南区",
-      "都筑区",
-      "瀬谷区",
-      "旭区",
-      "泉区",
-      "緑区"
-    ],
+    supportedAreas,
+    supportedAreaServed,
     twitterUrl: "",
     facebookUrl: "",
     isMobile: false
