@@ -4,9 +4,11 @@
       <return-button />
       <shop-item :shop="shop" />
     </div>
-    <div class="shop_show__map">
+    <div
+      v-if="center && shop.latitude && shop.longitude"
+      class="shop_show__map"
+    >
       <GmapMap
-        v-if="center && shop.latitude && shop.longitude"
         ref="mapRef"
         :center="center"
         :zoom="14"

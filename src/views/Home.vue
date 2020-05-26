@@ -8,12 +8,12 @@
         <main-banner-svg />
         <h1 class="heading">{{ headerTitle }}</h1>
       </div>
-      <search-item v-if="isSearch" />
+      <search-item v-if="showSearch" />
       <div class="inner">
         <div
-          v-for="(shop, i) in filteredShops"
-          :id="'shop' + i"
-          :key="i"
+          v-for="shop in filteredShops"
+          :id="trimURI(shop['@id'])"
+          :key="shop['@id']"
           class="shop_wrapper"
           @click="handleShopPoint(shop.name)"
         >
@@ -54,19 +54,11 @@
           @closeclick="infoWindowOpen = false"
         >
           <router-link
-            v-if="isMobile"
             :to="{ name: 'shop_show', params: { name: shopName } }"
             class="map_window_inner"
           >
             {{ shopName }}
           </router-link>
-          <a
-            v-else
-            v-scroll-to="'#shop' + currentShopIndex"
-            class="map_window_inner"
-          >
-            {{ shopName }}
-          </a>
         </GmapInfoWindow>
       </GmapMap>
       <div v-if="notMapData" class="not_map_pin">{{ notMapData }}</div>
@@ -75,17 +67,10 @@
 </template>
 
 <script>
+import VueScrollTo from "vue-scrollto";
 import ShopItem from "../components/ShopItem";
 import SearchItem from "../components/SearchItem";
 import MainBannerSvg from "../components/MainBannerSvg";
-
-const supportAreas = [
-  "青葉台",
-  "あざみ野",
-  "市が尾＆藤が丘",
-  "たまプラーザ",
-  "奈良＆鴨志田"
-];
 
 export default {
   name: "Home",
@@ -95,8 +80,8 @@ export default {
     ShopItem
   },
   data: () => ({
-    isMap: true,
-    isSearch: false,
+    showMap: true,
+    showSearch: false,
     currentLocation: null,
     shops: [],
     infoWindowPosition: {
@@ -105,32 +90,34 @@ export default {
     },
     infoWindowOpen: false,
     shopName: "",
-    currentShopIndex: "",
+    currentShopId: "",
     isMobile: false,
     notMapData: false
   }),
   computed: {
     headerTitle: function() {
-      if (!this.$route.params["name"]) return "横浜市";
-      if (supportAreas.includes(this.$route.params["name"])) {
-        return this.$route.params["name"];
-      } else {
-        return "";
-      }
+      if (!this.$route.params.area) return "横浜市";
+      return this.$route.params.area;
     },
     filteredShops: function() {
-      const target = this.$route.params["name"];
+      const target = this.$route.params.area;
       let shopsArray = [];
       if (target) {
-        shopsArray = this.shops.filter(v => {
-          return v.areaServed === target;
-        });
+        if (this.$route.name === "area_index") {
+          shopsArray = this.shops.filter(v => {
+            return v.address && v.address.addressLocality === target;
+          });
+        } else if (this.$route.name === "area_served_index") {
+          shopsArray = this.shops.filter(v => {
+            return v.areaServed === target;
+          });
+        }
       } else {
         shopsArray = this.shops;
       }
       if (!this.$store.state.keyword) return shopsArray;
       return shopsArray.filter(v => {
-        return v.name.indexOf(this.$store.state.keyword) > -1; //|| !v.latitude;
+        return v.name.indexOf(this.$store.state.keyword) > -1;
       });
     },
     filteredShopsForMap: function() {
@@ -139,18 +126,10 @@ export default {
       });
     }
   },
-  beforeCreate() {
-    if (
-      this.$route.params["name"] &&
-      !supportAreas.includes(this.$route.params["name"])
-    ) {
-      this.$router.push({ name: "Home" });
-    }
-  },
   async created() {
     if (window.innerWidth <= 767) {
-      this.isMap = false;
-      this.isSearch = true;
+      this.showMap = false;
+      this.showSearch = true;
       this.isMobile = true;
     } else {
       this.$store.dispatch("setDisplayType", "list");
@@ -166,18 +145,22 @@ export default {
     }
   },
   methods: {
-    toggleInfoWindow(shop, index) {
+    trimURI(str) {
+      return str.replace(/\/|:|\.|-/gi, "");
+    },
+    toggleInfoWindow(shop) {
       this.shopName = shop.name;
       this.infoWindowPosition = {
         lat: Number(shop.latitude),
         lng: Number(shop.longitude)
       };
 
-      if (this.currentShopIndex === index) {
+      if (this.currentShopId === shop["@id"]) {
         this.infoWindowOpen = !this.infoWindowOpen;
       } else {
         this.infoWindowOpen = true;
-        this.currentShopIndex = index;
+        this.currentShopId = shop["@id"];
+        VueScrollTo.scrollTo("#" + this.trimURI(shop["@id"]));
       }
     },
     handleShopPoint(name) {

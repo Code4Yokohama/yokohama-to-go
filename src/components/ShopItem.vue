@@ -153,7 +153,6 @@ export default {
     mediaLinkFromGoogleMap: "",
     isShareModal: false,
     isMenu: false,
-    palaceholderNum: "",
     twitterUrl: "",
     facebookUrl: ""
   }),
