@@ -131,6 +131,7 @@ sketch
 
 # End of https://www.gitignore.io/api/vue,node,firebase
 
-.env.staging
-.env.production
-.gcloud/
+data/*.csv
+data/*.json
+!public/data/
+!data/takeoutyokohama.csv
