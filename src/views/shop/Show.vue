@@ -2,18 +2,19 @@
   <div class="shop_show">
     <div class="shop_show__inner">
       <return-button />
-      <shop-item v-bind="shop" />
+      <shop-item :shop="shop" />
     </div>
     <div class="shop_show__map">
       <GmapMap
-        v-if="currentLocation"
+        v-if="center && shop.latitude && shop.longitude"
         ref="mapRef"
-        :center="currentLocation"
+        :center="center"
         :zoom="14"
         :options="{ draggableCursor: 'default' }"
         style="width: 100%; height: 100%"
       >
         <GmapMarker
+          v-if="shop.latitude && shop.longitude"
           :position="{
             lat: Number(shop.latitude),
             lng: Number(shop.longitude)
@@ -31,6 +32,7 @@
 <script>
 import ShopItem from "@/components/ShopItem";
 import ReturnButton from "@/components/ReturnButton";
+
 export default {
   name: "Show",
   components: {
@@ -38,19 +40,19 @@ export default {
     ShopItem
   },
   data: () => ({
-    shop: [],
-    currentLocation: null
+    shop: {},
+    center: null
   }),
   async created() {
-    let shops = await this.$http.get("data/shops.json");
+    let shops = await this.$http.get("/data/shops.json");
     if (shops) {
       this.shop = shops.data.find(
         shop => shop.name === this.$route.params["name"]
       );
     }
-    this.currentLocation = {
-      lat: this.shop.latitude,
-      lng: this.shop.longitude
+    this.center = {
+      lat: Number(this.shop.latitude),
+      lng: Number(this.shop.longitude)
     };
   }
 };
@@ -58,6 +60,7 @@ export default {
 
 <style lang="scss">
 @import "@/assets/scss/style.scss";
+
 .shop_show {
   .shop {
     margin: 0 0 4rem;
@@ -66,16 +69,20 @@ export default {
 </style>
 <style scoped lang="scss">
 @import "@/assets/scss/style.scss";
+
 .shop_show {
   padding: 7.1rem 0 0;
   overflow-y: auto;
+
   &__inner {
     width: 50%;
     margin: 0 auto;
   }
+
   &__map {
     height: 40rem;
   }
+
   @include mediaMobile {
     &__inner {
       width: 100%;

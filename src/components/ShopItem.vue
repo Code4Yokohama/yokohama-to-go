@@ -21,12 +21,7 @@
       <p v-if="shopHoliday" class="shopHoliday">休業日：{{ shopHoliday }}</p>
     </div>
     <div class="shop__thumbnail">
-      <img
-        v-if="images[0]"
-        :src="images[0]"
-        :alt="'画像：' + name"
-        class="image"
-      />
+      <img v-if="images" :src="images" :alt="'画像：' + name" class="image" />
       <img
         v-else
         :src="'/images/placeholder' + category + '.png'"
@@ -82,7 +77,7 @@
     </div>
     <div v-if="menu" class="shop__menu">
       <div class="menu_list" :class="!isMenu && menu.length > 50 ? 'hide' : ''">
-        {{ menu }}<br />
+        <span v-for="(m, i) in menu" :key="i"> {{ m.content }}<br /> </span>
         {{ discount }}
       </div>
       <div
@@ -137,30 +132,86 @@
 export default {
   name: "ShopItem",
   props: {
-    name: { type: String, default: "" },
-    category: { type: String, default: "2401" },
-    takeout: { type: Boolean, default: false },
-    delivery: { type: Boolean, default: false },
-    address: { type: String, default: "" },
-    shopHour: { type: String, default: "" },
-    shopHoliday: { type: String, default: "" },
-    images: { type: Array, default: () => [] },
-    description: { type: String, default: "" },
-    website: { type: String, default: "" },
-    map: { type: String, default: "" },
-    phone: { type: String, default: "" },
-    menu: { type: String, default: "" },
-    discount: { type: String, default: "" },
-    htmlFromGoogleMap: { type: String, default: "" },
-    mediaLinkFromGoogleMap: { type: String, default: "" }
+    shop: { type: Object, default: () => {} }
   },
   data: () => ({
+    name: "",
+    category: "2401",
+    takeout: false,
+    delivery: false,
+    address: "",
+    shopHour: "",
+    shopHoliday: "",
+    images: "",
+    description: "",
+    website: "",
+    map: "",
+    phone: "",
+    menu: [],
+    discount: "",
+    htmlFromGoogleMap: "",
+    mediaLinkFromGoogleMap: "",
     isShareModal: false,
     isMenu: false,
     palaceholderNum: "",
     twitterUrl: "",
     facebookUrl: ""
   }),
+  watch: {
+    shop: {
+      handler: function(v) {
+        if (!v) return;
+        this.name = v.name;
+        this.address = v.streetAddress;
+        this.shopHour = v.openingHour;
+        this.images = v.image;
+        if (v.hasMenu) {
+          this.description = v.hasMenu.description;
+        }
+        this.website = v.url;
+        this.phone = v.telephone;
+        if (v.makesOffer) {
+          this.takeout = v.makesOffer.find(v => {
+            return v.name === "テイクアウト";
+          });
+          this.delivery = v.makesOffer.find(v => {
+            return v.name === "デリバリー";
+          });
+          if (v.hasMenu && v.hasMenu.hasMenuItem[0]) {
+            this.menu.push({
+              key: 0,
+              content: v.hasMenu.hasMenuItem[0].name
+            });
+            if (v.hasMenu.hasMenuItem[0].price) {
+              this.menu[0]["content"] +=
+                "　" + v.hasMenu.hasMenuItem[0].price + "円";
+            }
+          }
+          if (v.hasMenu && v.hasMenu.hasMenuItem[1]) {
+            this.menu.push({
+              key: 1,
+              content: v.hasMenu.hasMenuItem[1].name
+            });
+            if (v.hasMenu.hasMenuItem[1].price) {
+              this.menu[1]["content"] +=
+                "　" + v.hasMenu.hasMenuItem[1].price + "円";
+            }
+          }
+          if (v.hasMenu && v.hasMenu.hasMenuItem[2]) {
+            this.menu.push({
+              key: 2,
+              content: v.hasMenu.hasMenuItem[2].name
+            });
+            if (v.hasMenu.hasMenuItem[2].price) {
+              this.menu[2]["content"] +=
+                "　" + v.hasMenu.hasMenuItem[2].price + "円";
+            }
+          }
+        }
+      },
+      immediate: true
+    }
+  },
   created() {
     if (this.$route.name === "shop_show") {
       this.isMenu = true;
@@ -213,21 +264,26 @@ export default {
 
 <style scoped lang="scss">
 @import "@/assets/scss/style.scss";
+
 .shop {
   margin: 0 0 11.8rem;
+
   &__name {
     font-size: 2.4rem;
     font-weight: 700;
     padding: 0 0 1rem;
     margin: 0 0 1.5rem;
     border-bottom: 0.1rem solid $gray01;
+
     a {
       color: $gray02;
     }
   }
+
   &__tags {
     display: flex;
     margin: 0 0 0.9rem;
+
     .tag {
       font-size: 1rem;
       font-weight: 700;
@@ -236,32 +292,39 @@ export default {
       margin: 0 1rem 0 0;
       line-height: 2rem;
       border-radius: 0.3rem;
+
       &.take_out {
         background: $yellow01;
       }
+
       &.delivery {
         background: $red01;
       }
     }
   }
+
   &__time {
     font-size: 1.2rem;
     margin: 0 0 2.5rem;
+
     .open,
     .shopHoliday {
       display: inline-block;
       vertical-align: middle;
     }
+
     .open {
       margin: 0 1rem 0 0;
     }
   }
+
   &__thumbnail {
     position: relative;
     width: 100%;
     padding: 66.8% 0 0;
     margin: 0 0 2.4rem;
     overflow: hidden;
+
     .image {
       position: absolute;
       top: 50%;
@@ -270,31 +333,38 @@ export default {
       transform: translate(-50%, -50%);
     }
   }
+
   &__description {
     margin: 0 0 6rem;
   }
+
   &__icons {
     display: flex;
     justify-content: center;
     margin: 0 0 2.8rem;
+
     .icon {
       font-size: 1.2rem;
       color: $mainColor;
       margin: 0 2.5rem 0 0;
       text-align: center;
+
       p {
         margin: 1.6rem 0 0;
       }
+
       a {
         display: block;
         color: $mainColor;
         margin: 1.6rem 0 0;
       }
+
       &.share {
         cursor: pointer;
       }
     }
   }
+
   &__menu {
     .toggle_button {
       position: relative;
@@ -305,10 +375,12 @@ export default {
       line-height: 3rem;
       border-radius: 1.5rem;
       border: 0.1rem solid $mainColor;
+
       svg {
         display: inline-block;
         vertical-align: middle;
       }
+
       &:after {
         content: "";
         position: absolute;
@@ -323,6 +395,7 @@ export default {
           bottom: 0.2rem solid $mainColor;
         }
       }
+
       &.active {
         &:after {
           top: 1.2rem;
@@ -335,13 +408,16 @@ export default {
         }
       }
     }
+
     .menu_list {
       position: relative;
       padding: 2rem 1.5rem 1.5rem;
       line-height: 2.4rem;
       overflow-y: hidden;
+
       &.hide {
         height: 10rem;
+
         &:after {
           content: "";
           position: absolute;
@@ -354,6 +430,7 @@ export default {
       }
     }
   }
+
   .share_modal {
     position: fixed;
     top: 0;
@@ -362,6 +439,7 @@ export default {
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.6);
+
     &__inner {
       position: absolute;
       top: 50%;
@@ -372,9 +450,11 @@ export default {
       border-radius: 0.8rem;
       background: $white;
     }
+
     &__heading {
       margin: 0 0 1.6rem;
       text-align: center;
+
       h2 {
         font-size: 2rem;
         margin-bottom: 2rem;
@@ -382,17 +462,21 @@ export default {
         border-bottom: solid 1px #ccc;
       }
     }
+
     &__icons {
       display: flex;
       justify-content: center;
+
       .icon {
         margin: 0 1rem;
+
         a {
           color: $gray02;
         }
       }
     }
   }
+
   @include mediaMobile {
     &__name,
     &__tags,

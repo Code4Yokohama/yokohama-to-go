@@ -43,7 +43,7 @@
         >
       </section>
       <section class="side_menu__section other_area">
-        <h3 class="section_heading">商店会</h3>
+        <h3 class="section_heading">エリア</h3>
         <router-link
           v-for="(point, i) in area"
           :key="i"
@@ -120,11 +120,24 @@ export default {
   name: "SideMenu",
   data: () => ({
     area: [
-      "青葉台",
-      "あざみ野",
-      "市が尾＆藤が丘",
-      "たまプラーザ",
-      "奈良＆鴨志田"
+      "青葉区",
+      "神奈川区",
+      "金沢区",
+      "中区",
+      "戸塚区",
+      "鶴見区",
+      "港北区",
+      "保土ケ谷区",
+      "西区",
+      "南区",
+      "磯子区",
+      "栄区",
+      "港南区",
+      "都筑区",
+      "瀬谷区",
+      "旭区",
+      "泉区",
+      "緑区"
     ],
     twitterUrl: "",
     facebookUrl: "",

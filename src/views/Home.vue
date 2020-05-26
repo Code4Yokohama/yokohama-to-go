@@ -17,7 +17,7 @@
           class="shop_wrapper"
           @click="handleShopPoint(shop.name)"
         >
-          <shop-item v-bind="shop" />
+          <shop-item :shop="shop" />
         </div>
       </div>
     </div>
@@ -26,12 +26,12 @@
         v-if="currentLocation"
         ref="mapRef"
         :center="currentLocation"
-        :zoom="14"
+        :zoom="12"
         :options="{ draggableCursor: 'default' }"
         style="width: 100%; height: 100%"
       >
         <GmapMarker
-          v-for="(shop, index) in filteredShops"
+          v-for="(shop, index) in filteredShopsForMap"
           :key="index"
           :position="{
             lat: Number(shop.latitude),
@@ -123,15 +123,19 @@ export default {
       let shopsArray = [];
       if (target) {
         shopsArray = this.shops.filter(v => {
-          return v.area === target;
+          return v.areaServed === target;
         });
       } else {
         shopsArray = this.shops;
       }
-
       if (!this.$store.state.keyword) return shopsArray;
       return shopsArray.filter(v => {
-        return v.name.indexOf(this.$store.state.keyword) > -1;
+        return v.name.indexOf(this.$store.state.keyword) > -1; //|| !v.latitude;
+      });
+    },
+    filteredShopsForMap: function() {
+      return this.filteredShops.filter(v => {
+        return v.latitude && v.longitude;
       });
     }
   },
@@ -154,10 +158,12 @@ export default {
     const shops = await this.$http.get("data/shops.json");
     this.shops = shops.data;
     const firstShop = this.filteredShops.find(v => v.latitude);
-    this.currentLocation = {
-      lat: firstShop.latitude,
-      lng: firstShop.longitude
-    };
+    if (firstShop && firstShop.latitude) {
+      this.currentLocation = {
+        lat: Number(firstShop.latitude),
+        lng: Number(firstShop.longitude)
+      };
+    }
   },
   methods: {
     toggleInfoWindow(shop, index) {
@@ -216,16 +222,20 @@ export default {
 </script>
 <style lang="scss">
 @import "@/assets/scss/style.scss";
+
 @include mediaMobile {
   .home {
     .search {
       margin: 0 0 3.3rem;
+
       &__inner {
         height: 5rem;
+
         &.input_active {
           display: none;
         }
       }
+
       &__input {
         position: static;
         width: 100%;
@@ -237,15 +247,19 @@ export default {
 
 <style scoped lang="scss">
 @import "@/assets/scss/style.scss";
+
 .home {
   display: flex;
+
   &__left,
   &__right {
     width: 50%;
   }
+
   &__left {
     height: 100vh;
     overflow-y: auto;
+
     .page_heading {
       position: relative;
       z-index: 15;
@@ -253,25 +267,31 @@ export default {
       margin: 0 auto 5.3rem;
       text-align: center;
       background: $white;
+
       .heading {
         font-size: 3.6rem;
         margin: 7.1rem 0 0;
       }
     }
+
     .inner {
       margin: 0 auto;
     }
+
     .shop_wrapper {
       cursor: pointer;
     }
   }
+
   &__right {
     position: relative;
     height: 100vh;
     padding: 5.1rem 0 0;
+
     .map_window_inner {
       color: $gray02;
     }
+
     .not_map_pin {
       position: absolute;
       top: 50%;
@@ -285,6 +305,7 @@ export default {
       background: $white;
     }
   }
+
   @keyframes fadeOut {
     0% {
       display: block;
@@ -304,15 +325,18 @@ export default {
     &__left {
       width: 100%;
       order: 1;
+
       .page_heading {
         .heading {
           font-size: 2.8rem;
           margin: 2.1rem 0 0;
         }
       }
+
       .inner {
         width: 100%;
       }
+
       &.hide {
         display: none;
       }
