@@ -15,6 +15,7 @@
       <div v-if="takeout" class="tag take_out">TAKE OUT</div>
       <div v-if="delivery" class="tag delivery">DELIVERY</div>
     </div>
+    <div class="shop__servesCuisine">{{ servesCuisine }}</div>
     <div class="shop__address">{{ address }}</div>
     <div class="shop__time">
       <p v-if="shopHour" class="open">営業時間：{{ shopHour }}</p>
@@ -129,6 +130,40 @@
 </template>
 
 <script>
+//類似していてマッチして欲しくない文字列がある場合、似た文字列の直前に書き、無視したい数を値に入れる
+//例："焼きそば"を"そば"と認識されたくないから、["焼きそば", 2]とし"そば"の直前におく
+const servesCuisine_images = [
+  ["和食", "/images/placeholder2402s.png"],
+  ["イタリア", "/images/placeholder2403s.png"],
+  ["フランス", "/images/placeholder2404s.png"],
+  ["中華", "/images/placeholder2405s.png"],
+  ["居酒屋", "/images/placeholder2406s.png"],
+  ["ビアガーデン", "/images/placeholder2407s.png"],
+  ["ビール", "/images/placeholder2407s.png"],
+  ["バー", "/images/placeholder2408s.png"],
+  ["ラーメン", "/images/placeholder2409s.png"],
+  ["寿司", "/images/placeholder2410s.png"],
+  ["焼きそば", 2],
+  ["まぜそば", 1],
+  ["そば", "/images/placeholder2411s.png"],
+  ["うどん", "/images/placeholder2412s.png"],
+  ["ファーストフード", "/images/placeholder2413s.png"],
+  ["ファストフード", "/images/placeholder2413s.png"],
+  ["焼肉", "/images/placeholder2414s.png"],
+  ["とんかつ", "/images/placeholder2415s.png"],
+  ["お好み焼き", "/images/placeholder2416s.png"],
+  ["牛丼", "/images/placeholder2417s.png"],
+  ["すき焼き", "/images/placeholder2418s.png"],
+  ["しゃぶしゃぶ", "/images/placeholder2419s.png"],
+  ["焼き鳥", "/images/placeholder2420s.png"],
+  ["カレー", "/images/placeholder2421s.png"],
+  ["喫茶", "/images/placeholder2422s.png"],
+  ["カフェ", "/images/placeholder2422s.png"],
+  ["アイスクリーム", "/images/placeholder2423s.png"],
+  ["レストラン", "/images/placeholder2401s.png"],
+  ["その他", "/images/placeholder2499s.png"]
+];
+
 export default {
   name: "ShopItem",
   props: {
@@ -139,6 +174,7 @@ export default {
     category: "2401",
     takeout: false,
     delivery: false,
+    servesCuisine: "",
     address: "",
     shopHour: "",
     shopHoliday: "",
@@ -161,9 +197,45 @@ export default {
       handler: function(v) {
         if (!v) return;
         this.name = v.name;
+        if (v.servesCuisine) {
+          if (v.servesCuisine[0]) {
+            this.servesCuisine += v.servesCuisine[0];
+          }
+          if (v.servesCuisine[1] && this.servesCuisine !== "") {
+            this.servesCuisine += " , " + v.servesCuisine[1];
+          } else if (v.servesCuisine[1]) {
+            this.servesCuisine += v.servesCuisine[1];
+          }
+          if (v.servesCuisine[2] && this.servesCuisine !== "") {
+            this.servesCuisine += " , " + v.servesCuisine[2];
+          } else if (v.servesCuisine[2]) {
+            this.servesCuisine += v.servesCuisine[2];
+          }
+        }
         this.address = v.streetAddress;
         this.shopHour = v.openingHour;
-        this.images = v.image;
+
+        if (v.image !== undefined) {
+          this.images = v.image;
+        } else if (v.servesCuisine && v.servesCuisine[0]) {
+          for (let i = 0; i < servesCuisine_images.length; i++) {
+            //無視したいワードが含まれていたら、iを適切に増やすことで対応する
+            //例えば、"焼きそば"がマッチした場合、iを2増やしてcontinueすることで、"焼きそば"と("まぜそば"と)"そば"をスルーする
+            if (
+              v.servesCuisine[0].indexOf(servesCuisine_images[i][0]) > -1 &&
+              servesCuisine_images[i][1] < 10
+            ) {
+              i += servesCuisine_images[i][1];
+              continue;
+            } else if (
+              v.servesCuisine[0].indexOf(servesCuisine_images[i][0]) > -1
+            ) {
+              this.images = servesCuisine_images[i][1];
+              break;
+            }
+          }
+        }
+
         if (v.hasMenu) {
           this.description = v.hasMenu.description;
         }
@@ -300,6 +372,10 @@ export default {
         background: $red01;
       }
     }
+  }
+
+  &__servesCuisine {
+    font-size: 1.2rem;
   }
 
   &__time {
