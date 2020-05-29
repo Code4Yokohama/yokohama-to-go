@@ -22,12 +22,7 @@
       <p v-if="shopHoliday" class="shopHoliday">休業日：{{ shopHoliday }}</p>
     </div>
     <div class="shop__thumbnail">
-      <img v-if="images" :src="images" :alt="'画像：' + name" class="image" />
-      <img
-        v-else
-        :src="'/images/placeholder' + category + '.png'"
-        class="image"
-      />
+      <img v-if="image" :src="image" :alt="'画像：' + name" class="image" />
     </div>
     <div class="shop__description">{{ description }}</div>
     <div class="shop__icons">
@@ -133,35 +128,35 @@
 //類似していてマッチして欲しくない文字列がある場合、似た文字列の直前に書き、無視したい数を値に入れる
 //例："焼きそば"を"そば"と認識されたくないから、["焼きそば", 2]とし"そば"の直前におく
 const servesCuisine_images = [
-  ["和食", "/images/placeholder2402s.png"],
-  ["イタリア", "/images/placeholder2403s.png"],
-  ["フランス", "/images/placeholder2404s.png"],
-  ["中華", "/images/placeholder2405s.png"],
-  ["居酒屋", "/images/placeholder2406s.png"],
-  ["ビアガーデン", "/images/placeholder2407s.png"],
-  ["ビール", "/images/placeholder2407s.png"],
-  ["バー", "/images/placeholder2408s.png"],
-  ["ラーメン", "/images/placeholder2409s.png"],
-  ["寿司", "/images/placeholder2410s.png"],
+  ["和食", "/images/placeholder2402s.png", "/images/placeholder2402.png"],
+  ["イタリア", "/images/placeholder2403s.png", "/images/placeholder2403.png"],
+  ["フランス", "/images/placeholder2404s.png", "/images/placeholder2404.png"],
+  ["中華", "/images/placeholder2405s.png", "/images/placeholder2405.png"],
+  ["居酒屋", "/images/placeholder2406s.png", "/images/placeholder2406.png"],
+  ["ビアガーデン", "/images/placeholder2407s.png", "/images/placeholder2407.png"],
+  ["ビール", "/images/placeholder2407s.png", "/images/placeholder2407.png"],
+  ["バー", "/images/placeholder2408s.png", "/images/placeholder2408.png"],
+  ["ラーメン", "/images/placeholder2409s.png", "/images/placeholder2409.png"],
+  ["寿司", "/images/placeholder2410s.png", "/images/placeholder2410.png"],
   ["焼きそば", 2],
   ["まぜそば", 1],
-  ["そば", "/images/placeholder2411s.png"],
-  ["うどん", "/images/placeholder2412s.png"],
-  ["ファーストフード", "/images/placeholder2413s.png"],
-  ["ファストフード", "/images/placeholder2413s.png"],
-  ["焼肉", "/images/placeholder2414s.png"],
-  ["とんかつ", "/images/placeholder2415s.png"],
-  ["お好み焼き", "/images/placeholder2416s.png"],
-  ["牛丼", "/images/placeholder2417s.png"],
-  ["すき焼き", "/images/placeholder2418s.png"],
-  ["しゃぶしゃぶ", "/images/placeholder2419s.png"],
-  ["焼き鳥", "/images/placeholder2420s.png"],
-  ["カレー", "/images/placeholder2421s.png"],
-  ["喫茶", "/images/placeholder2422s.png"],
-  ["カフェ", "/images/placeholder2422s.png"],
-  ["アイスクリーム", "/images/placeholder2423s.png"],
-  ["レストラン", "/images/placeholder2401s.png"],
-  ["その他", "/images/placeholder2499s.png"]
+  ["そば", "/images/placeholder2411s.png", "/images/placeholder2411.png"],
+  ["うどん", "/images/placeholder2412s.png", "/images/placeholder2412.png"],
+  ["ファーストフード", "/images/placeholder2413s.png", "/images/placeholder2413.png"],
+  ["ファストフード", "/images/placeholder2413s.png", "/images/placeholder2413.png"],
+  ["焼肉", "/images/placeholder2414s.png", "/images/placeholder2414.png"],
+  ["とんかつ", "/images/placeholder2415s.png", "/images/placeholder2415.png"],
+  ["お好み焼き", "/images/placeholder2416s.png", "/images/placeholder2416.png"],
+  ["牛丼", "/images/placeholder2417s.png", "/images/placeholder2417.png"],
+  ["すき焼き", "/images/placeholder2418s.png", "/images/placeholder2418.png"],
+  ["しゃぶしゃぶ", "/images/placeholder2419s.png", "/images/placeholder2419.png"],
+  ["焼き鳥", "/images/placeholder2420s.png", "/images/placeholder2420.png"],
+  ["カレー", "/images/placeholder2421s.png", "/images/placeholder2421.png"],
+  ["喫茶", "/images/placeholder2422s.png", "/images/placeholder2422.png"],
+  ["カフェ", "/images/placeholder2422s.png", "/images/placeholder2422.png"],
+  ["アイスクリーム", "/images/placeholder2423s.png", "/images/placeholder2423.png"],
+  ["レストラン", "/images/placeholder2401s.png", "/images/placeholder2401.png"],
+  ["その他", "/images/placeholder2499s.png", "/images/placeholder2499.png"]
 ];
 
 export default {
@@ -171,14 +166,13 @@ export default {
   },
   data: () => ({
     name: "",
-    category: "2401",
     takeout: false,
     delivery: false,
     servesCuisine: "",
     address: "",
     shopHour: "",
     shopHoliday: "",
-    images: "",
+    image: "/images/placeholder2401s.png",
     description: "",
     website: "",
     map: "",
@@ -216,8 +210,9 @@ export default {
         this.shopHour = v.openingHour;
 
         if (v.image !== undefined) {
-          this.images = v.image;
+          this.image = v.image;
         } else if (v.servesCuisine && v.servesCuisine[0]) {
+          const placeholderIndex = this.$route.name === 'shop_show' ? 2 : 1
           for (let i = 0; i < servesCuisine_images.length; i++) {
             //無視したいワードが含まれていたら、iを適切に増やすことで対応する
             //例えば、"焼きそば"がマッチした場合、iを2増やしてcontinueすることで、"焼きそば"と("まぜそば"と)"そば"をスルーする
@@ -226,14 +221,14 @@ export default {
               servesCuisine_images[i][1] < 10
             ) {
               i += servesCuisine_images[i][1];
-              continue;
             } else if (
               v.servesCuisine[0].indexOf(servesCuisine_images[i][0]) > -1
             ) {
-              this.images = servesCuisine_images[i][1];
-              break;
+              this.image = servesCuisine_images[i][placeholderIndex];
             }
           }
+        } else if(this.$route.name === 'shop_show'){
+          this.image = "/images/placeholder2401.png"
         }
 
         if (v.hasMenu) {
