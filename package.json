@@ -12,12 +12,9 @@
   "dependencies": {
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
-<<<<<<< Updated upstream
-=======
     "csv-writer": "^1.6.0",
     "csvtojson": "^2.0.10",
     "imi-enrichment-address": "https://info.gbiz.go.jp/tools/imi_tools/resource/imi-enrichment-address/imi-enrichment-address-2.0.0.tgz",
->>>>>>> Stashed changes
     "vue": "^2.6.11",
     "vue-gtm": "^2.2.0",
     "vue-router": "^3.1.6",
