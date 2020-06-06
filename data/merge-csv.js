@@ -1,6 +1,7 @@
 "use strict";
 const csv = require("csvtojson");
 const { createObjectCsvWriter } = require("csv-writer");
+const enrichment = require("imi-enrichment-address")
 const output = `${__dirname}/shops_updated.csv`;
 const csvWriter = createObjectCsvWriter({
   path: output,
@@ -36,7 +37,8 @@ const csvWriter = createObjectCsvWriter({
     { id: "othermenu", title: "その他のメニュー" },
     { id: "introduction", title: "お店の紹介" },
     { id: "imageUrl", title: "カバー画像URL" },
-    { id: "memo", title: "通信欄" }
+    { id: "memo", title: "通信欄" },
+    { id: "roughlongLat", title: "大まかな緯度経度" }
   ],
   encoding: "utf8",
   append: false
@@ -138,7 +140,7 @@ async function updateShopsCSV() {
   let max_score = 0;
 
   // N gramの処理
-  var ngram = function(s, t, n) {
+  const ngram = (s, t, n) => {
     let i;
     let s_grams = [];
     let t_grams = [];
@@ -233,14 +235,43 @@ async function updateShopsCSV() {
       shopList.push(t);
     }
   });
-  console.log("takeoutyokohamaからの追加件数：" + tRow + "件");
-  console.log("出力件数：" + shopList.length + "件");
 
-  csvWriter
-    .writeRecords(shopList) // returns a promise
-    .then(() => {
-      console.log("...Done");
+  console.log("--- 大まかな緯度経度の付加 ---");
+  // ループで実行する処理
+  const getEnrichment= (s) => {
+    return new Promise(function(resolve, reject) {
+      enrichment("神奈川県横浜市" + s["area"] + s["address1"]).then(json => {
+        if(json["地理座標"]) {
+          s["roughlongLat"] = json["地理座標"]["緯度"] + ',' + json["地理座標"]["経度"];
+        }else{
+          s["roughlongLat"] = "";
+        }
+        resolve(s);
+      });
     });
+  }
+
+  // Promiseの直列処理をループで繰り返す
+  let myPromise = Promise.resolve();
+  shopList.map(function(s, i) {
+    myPromise = myPromise
+    .then(getEnrichment.bind(this, s))
+  });
+
+
+  myPromise
+  .then( function ( message ) {
+    console.log("出力件数：" + shopList.length + "件");
+    csvWriter
+    .writeRecords(shopList) // returns a promise
+      .then(() => {
+        console.log("...Done");
+      });
+  } )
+  .catch( function ( reason ) {
+    console.log( reason ) ;
+  } ) ;
+
 }
 
 updateShopsCSV();
