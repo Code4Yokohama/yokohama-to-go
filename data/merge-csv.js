@@ -140,7 +140,7 @@ async function updateShopsCSV() {
   let max_score = 0;
 
   // N gramの処理
-  var ngram = function(s, t, n) {
+  const ngram = (s, t, n) => {
     let i;
     let s_grams = [];
     let t_grams = [];
@@ -237,16 +237,8 @@ async function updateShopsCSV() {
   });
 
   console.log("--- 大まかな緯度経度の付加 ---");
-
-  // Promiseの直列処理をループで繰り返す
-  var myPromise = Promise.resolve();
-  shopList.map(function(s, i) {
-    myPromise = myPromise
-    .then(getEnrichment.bind(this, s))
-  });
-
   // ループで実行する処理
-  function getEnrichment(s){
+  const getEnrichment= (s) => {
     return new Promise(function(resolve, reject) {
       enrichment("神奈川県横浜市" + s["area"] + s["address1"]).then(json => {
         if(json["地理座標"]) {
@@ -258,6 +250,14 @@ async function updateShopsCSV() {
       });
     });
   }
+
+  // Promiseの直列処理をループで繰り返す
+  let myPromise = Promise.resolve();
+  shopList.map(function(s, i) {
+    myPromise = myPromise
+    .then(getEnrichment.bind(this, s))
+  });
+
 
   myPromise
   .then( function ( message ) {
