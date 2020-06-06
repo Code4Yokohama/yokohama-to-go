@@ -5,7 +5,9 @@
       :class="$store.state.displayType === 'list' ? 'hide' : ''"
     >
       <div class="page_heading">
-        <main-banner-svg />
+        <router-link :to="{ name: 'Home' }" title="TOPページに移動します">
+          <main-banner-svg />
+        </router-link>
         <h1 class="heading">{{ headerTitle }}</h1>
       </div>
       <search-item v-if="showSearch" />
