@@ -31,7 +31,7 @@
         style="width: 100%; height: 100%"
       >
         <GmapMarker
-          v-for="(shop, index) in filteredShopsForMap"
+          v-for="(shop, index) in mapPins"
           :key="index"
           :position="{
             lat: Number(shop.latitude),
@@ -92,7 +92,102 @@ export default {
     shopName: "",
     currentShopId: "",
     isMobile: false,
-    notMapData: false
+    notMapData: false,
+    mapPins: null,
+    areaCenter: {
+      ["市が尾＆藤が丘"]: {
+        lat: 35.545578,
+        lng: 139.534954
+      },
+      ["あざみ野"]: {
+        lat: 35.568663,
+        lng: 139.553451
+      },
+      ["奈良＆鴨志田"]: {
+        lat: 35.562884,
+        lng: 139.490428
+      },
+      ["青葉台"]: {
+        lat: 35.543035,
+        lng: 139.51674
+      },
+      ["たまプラーザ"]: {
+        lat: 35.577541,
+        lng: 139.558397
+      },
+      ["青葉区"]: {
+        lat: 35.552975,
+        lng: 139.536922
+      },
+      ["神奈川区"]: {
+        lat: 35.477414,
+        lng: 139.629113
+      },
+      ["金沢区"]: {
+        lat: 35.33814,
+        lng: 139.624496
+      },
+      ["中区"]: {
+        lat: 35.444759,
+        lng: 139.642172
+      },
+      ["戸塚区"]: {
+        lat: 35.400032,
+        lng: 139.533476
+      },
+      ["鶴見区"]: {
+        lat: 35.508482,
+        lng: 139.682424
+      },
+      ["港北区"]: {
+        lat: 35.519044,
+        lng: 139.633067
+      },
+      ["保土ヶ谷区"]: {
+        lat: 35.460017,
+        lng: 139.595996
+      },
+      ["西区"]: {
+        lat: 35.453565,
+        lng: 139.616815
+      },
+      ["南区"]: {
+        lat: 35.43441,
+        lng: 139.627633
+      },
+      ["磯子区"]: {
+        lat: 35.402424,
+        lng: 139.618539
+      },
+      ["栄区"]: {
+        lat: 35.364672,
+        lng: 139.553806
+      },
+      ["港南区"]: {
+        lat: 35.400991,
+        lng: 139.592535
+      },
+      ["都筑区"]: {
+        lat: 35.544868,
+        lng: 139.570612
+      },
+      ["瀬谷区"]: {
+        lat: 35.466246,
+        lng: 139.498819
+      },
+      ["旭区"]: {
+        lat: 35.474813,
+        lng: 139.544815
+      },
+      ["泉区"]: {
+        lat: 35.417832,
+        lng: 139.488696
+      },
+      ["緑区"]: {
+        lat: 35.512396,
+        lng: 139.537811
+      }
+    }
   }),
   computed: {
     headerTitle: function() {
@@ -136,12 +231,61 @@ export default {
     }
     const shops = await this.$http.get("data/shops.json");
     this.shops = shops.data;
-    const firstShop = this.filteredShops.find(v => v.latitude);
-    if (firstShop && firstShop.latitude) {
-      this.currentLocation = {
-        lat: Number(firstShop.latitude),
-        lng: Number(firstShop.longitude)
-      };
+
+    const sortByDistance = require("sort-by-distance");
+    setTimeout(() => {
+      this.$refs.mapRef.$on("center_changed", e => {
+        console.log("centerChenged");
+        let origin = {
+          latitude: e.lat(),
+          longitude: e.lng()
+        };
+        const option = {
+          yName: "latitude",
+          xName: "longitude"
+        };
+        this.mapPins = sortByDistance(
+          origin,
+          this.filteredShopsForMap,
+          option
+        ).splice(0, 10);
+      });
+    }, 100);
+  },
+  watch: {
+    $route: {
+      handler: function(value) {
+        console.log(value);
+        this.mapPins = this.filteredShopsForMap;
+        console.log("beforeUpdate");
+        const firstShop = this.filteredShops.find(v => v.latitude);
+        if (this.$route.name === "Home") {
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              this.currentLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+              };
+            },
+            () => {
+              if (firstShop && firstShop.latitude) {
+                this.currentLocation = {
+                  lat: Number(firstShop.latitude),
+                  lng: Number(firstShop.longitude)
+                };
+              }
+            }
+          );
+        }
+        if (this.$route.params.area) {
+          let getArea = this.areaCenter[this.$route.params.area];
+          this.currentLocation = {
+            lat: getArea.lat,
+            lng: getArea.lng
+          };
+        }
+      },
+      immediate: true
     }
   },
   methods: {
