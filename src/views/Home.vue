@@ -5,7 +5,9 @@
       :class="$store.state.displayType === 'list' ? 'hide' : ''"
     >
       <div class="page_heading">
-        <main-banner-svg />
+        <router-link :to="{ name: 'Home' }" title="TOPページに移動します">
+          <main-banner-svg />
+        </router-link>
         <h1 class="heading">{{ headerTitle }}</h1>
       </div>
       <search-item v-if="showSearch" />
@@ -37,7 +39,10 @@
             lat: Number(shop.latitude),
             lng: Number(shop.longitude)
           }"
-          :icon="shop.icon"
+          :icon="{
+            url: '/images/active_pin.png',
+            scaledSize: { width: 50, height: 50, f: 'px', b: 'px' }
+          }"
           :z-index="shop.zindex"
           :animation="shop.animation"
           @click="toggleInfoWindow(shop, index)"
@@ -309,7 +314,6 @@ export default {
     },
     handleShopPoint(name) {
       this.shops.map(function(v) {
-        v.icon = null;
         v.zindex = null;
         v.animation = null;
       });
@@ -318,10 +322,6 @@ export default {
       this.shops.map(function(shop) {
         if (shop.name === name) {
           if (shop.latitude && shop.longitude) {
-            shop.icon = {
-              url: "/images/active_pin.png",
-              scaledSize: { width: 50, height: 50, f: "px", b: "px" }
-            };
             shop.animation = 1;
             shop.zindex = 100;
             centerPoint = {
@@ -330,7 +330,6 @@ export default {
             };
             notMapData = false;
           } else {
-            shop.icon = null;
             shop.zindex = null;
             shop.animation = null;
             centerPoint = {
