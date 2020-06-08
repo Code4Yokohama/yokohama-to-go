@@ -226,37 +226,6 @@ export default {
       });
     }
   },
-  async created() {
-    if (window.innerWidth <= 767) {
-      this.showMap = false;
-      this.showSearch = true;
-      this.isMobile = true;
-    } else {
-      this.$store.dispatch("setDisplayType", "list");
-    }
-    const shops = await this.$http.get("data/shops.json");
-    this.shops = shops.data;
-
-    const sortByDistance = require("sort-by-distance");
-    setTimeout(() => {
-      this.$refs.mapRef.$on("center_changed", e => {
-        console.log("centerChenged");
-        let origin = {
-          latitude: e.lat(),
-          longitude: e.lng()
-        };
-        const option = {
-          yName: "latitude",
-          xName: "longitude"
-        };
-        this.mapPins = sortByDistance(
-          origin,
-          this.filteredShopsForMap,
-          option
-        ).splice(0, 10);
-      });
-    }, 100);
-  },
   watch: {
     $route: {
       handler: function(value) {
@@ -292,6 +261,37 @@ export default {
       },
       immediate: true
     }
+  },
+  async created() {
+    if (window.innerWidth <= 767) {
+      this.showMap = false;
+      this.showSearch = true;
+      this.isMobile = true;
+    } else {
+      this.$store.dispatch("setDisplayType", "list");
+    }
+    const shops = await this.$http.get("data/shops.json");
+    this.shops = shops.data;
+
+    const sortByDistance = require("sort-by-distance");
+    setTimeout(() => {
+      this.$refs.mapRef.$on("center_changed", e => {
+        console.log("centerChenged");
+        let origin = {
+          latitude: e.lat(),
+          longitude: e.lng()
+        };
+        const option = {
+          yName: "latitude",
+          xName: "longitude"
+        };
+        this.mapPins = sortByDistance(
+          origin,
+          this.filteredShopsForMap,
+          option
+        ).splice(0, 10);
+      });
+    }, 100);
   },
   methods: {
     trimURI(str) {
