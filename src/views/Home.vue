@@ -228,10 +228,8 @@ export default {
   },
   watch: {
     $route: {
-      handler: function(value) {
-        console.log(value);
+      handler: function() {
         this.mapPins = this.filteredShopsForMap;
-        console.log("beforeUpdate");
         const firstShop = this.filteredShops.find(v => v.latitude);
         if (this.$route.name === "Home") {
           navigator.geolocation.getCurrentPosition(
@@ -273,10 +271,10 @@ export default {
     const shops = await this.$http.get("data/shops.json");
     this.shops = shops.data;
 
+    this.mapPins = this.filteredShopsForMap;
     const sortByDistance = require("sort-by-distance");
     setTimeout(() => {
       this.$refs.mapRef.$on("center_changed", e => {
-        console.log("centerChenged");
         let origin = {
           latitude: e.lat(),
           longitude: e.lng()
