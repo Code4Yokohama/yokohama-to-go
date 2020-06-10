@@ -315,6 +315,11 @@ export default {
       this.currentShops,
       option
     ).splice(0, 100);
+    this.mapPins = sortByDistance(
+      origin,
+      this.filteredShopsForMap,
+      option
+    ).splice(0, 100);
 
     // sort shops when move map
     setTimeout(() => {
