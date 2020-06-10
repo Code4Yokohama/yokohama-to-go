@@ -13,7 +13,7 @@
       <search-item v-if="showSearch" />
       <div class="inner">
         <div
-          v-for="shop in filteredShops"
+          v-for="shop in currentShops"
           :id="trimURI(shop['@id'])"
           :key="shop['@id']"
           class="shop_wrapper"
@@ -99,6 +99,7 @@ export default {
     isMobile: false,
     notMapData: false,
     mapPins: null,
+    currentShops: [],
     areaCenter: {
       ["市が尾＆藤が丘"]: {
         lat: 35.545578,
@@ -229,7 +230,6 @@ export default {
   watch: {
     $route: {
       handler: function() {
-        this.mapPins = this.filteredShopsForMap;
         const firstShop = this.filteredShops.find(v => v.latitude);
         if (this.$route.name === "Home") {
           navigator.geolocation.getCurrentPosition(
@@ -272,22 +272,50 @@ export default {
     this.shops = shops.data;
 
     this.mapPins = this.filteredShopsForMap;
+    this.currentShops = this.filteredShops;
+    this.currentShops.forEach(e => {
+      Object.keys(e).forEach(k => {
+        if (k === "address_latitude") {
+          e["latitude"] = e.address_latitude;
+        } else if (k === "address_longitude") {
+          e["longitude"] = e.address_longitude;
+        }
+      });
+    });
+
+    // sort shops
     const sortByDistance = require("sort-by-distance");
+    let origin = {
+      latitude: this.currentLocation.lat,
+      longitude: this.currentLocation.lng
+    };
+    const option = {
+      yName: "latitude",
+      xName: "longitude"
+    };
+    this.currentShops = sortByDistance(
+      origin,
+      this.currentShops,
+      option
+    ).splice(0, 100);
+
+    // sort shops when move map
     setTimeout(() => {
       this.$refs.mapRef.$on("center_changed", e => {
         let origin = {
           latitude: e.lat(),
           longitude: e.lng()
         };
-        const option = {
-          yName: "latitude",
-          xName: "longitude"
-        };
+        this.currentShops = sortByDistance(
+          origin,
+          this.currentShops,
+          option
+        ).splice(0, 100);
         this.mapPins = sortByDistance(
           origin,
           this.filteredShopsForMap,
           option
-        ).splice(0, 10);
+        ).splice(0, 100);
       });
     }, 100);
   },
@@ -319,7 +347,15 @@ export default {
       let notMapData = "";
       this.shops.map(function(shop) {
         if (shop.name === name) {
-          if (shop.latitude && shop.longitude) {
+          if (shop.address_latitude && shop.address_longitude) {
+            shop.zindex = null;
+            shop.animation = null;
+            centerPoint = {
+              lat: Number(shop.address_latitude),
+              lng: Number(shop.address_longitude)
+            };
+            notMapData = shop.name + "の地図情報はありません";
+          } else if (shop.latitude && shop.longitude) {
             shop.animation = 1;
             shop.zindex = 100;
             centerPoint = {
@@ -327,14 +363,6 @@ export default {
               lng: shop.longitude
             };
             notMapData = false;
-          } else {
-            shop.zindex = null;
-            shop.animation = null;
-            centerPoint = {
-              lat: Number(shop.latitude),
-              lng: Number(shop.longitude)
-            };
-            notMapData = shop.name + "の地図情報はありません";
           }
         }
       });
