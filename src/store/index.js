@@ -8,6 +8,11 @@ export default new Vuex.Store({
     displayType: "map",
     keyword: ""
   },
+  getters: {
+    keyword: state => {
+      return state.keyword;
+    }
+  },
   mutations: {
     setDisplayType(state, payload) {
       state.displayType = payload;

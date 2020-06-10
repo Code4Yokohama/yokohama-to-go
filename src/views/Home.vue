@@ -202,32 +202,47 @@ export default {
     },
     filteredShops: function() {
       const target = this.$route.params.area;
-      let shopsArray = [];
       if (target) {
         if (this.$route.name === "area_index") {
-          shopsArray = this.shops.filter(v => {
+          return this.shops.filter(v => {
             return v.address && v.address.addressLocality === target;
           });
         } else if (this.$route.name === "area_served_index") {
-          shopsArray = this.shops.filter(v => {
+          return this.shops.filter(v => {
             return v.areaServed === target;
           });
         }
-      } else {
-        shopsArray = this.shops;
       }
-      if (!this.$store.state.keyword) return shopsArray;
-      return shopsArray.filter(v => {
-        return v.name.indexOf(this.$store.state.keyword) > -1;
-      });
+      return this.shops;
     },
     filteredShopsForMap: function() {
       return this.filteredShops.filter(v => {
         return v.latitude && v.longitude;
       });
+    },
+    keyword() {
+      return this.$store.getters.keyword;
     }
   },
   watch: {
+    keyword(val) {
+      let searchShops = [];
+      let searchShopsMap = [];
+      console.log("search");
+      if (!val) {
+        searchShopsMap = this.filteredShopsForMap;
+        searchShops = this.filteredShops;
+      } else {
+        searchShopsMap = this.filteredShopsForMap.filter(v => {
+          return v.name.indexOf(val) > -1;
+        });
+        searchShops = this.filteredShops.filter(v => {
+          return v.name.indexOf(val) > -1;
+        });
+      }
+      this.currentShops = searchShops;
+      this.mapPins = searchShopsMap;
+    },
     $route: {
       handler: function() {
         this.mapPins = this.filteredShopsForMap;
