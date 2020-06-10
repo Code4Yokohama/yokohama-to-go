@@ -290,18 +290,28 @@ export default {
 
     this.mapPins = this.filteredShopsForMap;
     this.currentShops = this.filteredShops;
-    this.currentShops.forEach(e => {
-      Object.keys(e).forEach(k => {
-        if (k === "address_latitude") {
-          e["latitude"] = e.address_latitude;
-        } else if (k === "address_longitude") {
-          e["longitude"] = e.address_longitude;
-        }
-      });
-    });
+    // this.currentShops.forEach(e => {
+    //   Object.keys(e).forEach(k => {
+    //     if (k === "address_latitude") {
+    //       e["latitude"] = e.address_latitude;
+    //     } else if (k === "address_longitude") {
+    //       e["longitude"] = e.address_longitude;
+    //     } else {
+    //       return false;
+    //     }
+    //   });
+    // });
 
     // sort shops
     const sortByDistance = require("sort-by-distance");
+    let address_origin = {
+      address_latitude: this.currentLocation.lat,
+      address_longitude: this.currentLocation.lng
+    };
+    const address_option = {
+      yName: "address_latitude",
+      xName: "address_longitude"
+    };
     let origin = {
       latitude: this.currentLocation.lat,
       longitude: this.currentLocation.lng
@@ -311,9 +321,9 @@ export default {
       xName: "longitude"
     };
     this.currentShops = sortByDistance(
-      origin,
+      address_origin,
       this.currentShops,
-      option
+      address_option
     ).splice(0, 100);
     this.mapPins = sortByDistance(
       origin,
@@ -369,7 +379,7 @@ export default {
       let notMapData = "";
       this.shops.map(function(shop) {
         if (shop.name === name) {
-          if (shop.address_latitude && shop.address_longitude) {
+          if (!shop.latitude && !shop.longitude){
             shop.zindex = null;
             shop.animation = null;
             centerPoint = {
@@ -377,7 +387,7 @@ export default {
               lng: Number(shop.address_longitude)
             };
             notMapData = shop.name + "の地図情報はありません";
-          } else if (shop.latitude && shop.longitude) {
+          } else {
             shop.animation = 1;
             shop.zindex = 100;
             centerPoint = {
@@ -390,6 +400,9 @@ export default {
       });
       this.currentLocation = centerPoint;
       this.notMapData = notMapData;
+      setTimeout(() => {
+        this.notMapData = false;
+      }, 1500);
     }
   }
 };
