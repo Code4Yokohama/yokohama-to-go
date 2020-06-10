@@ -334,14 +334,18 @@ export default {
     // sort shops when move map
     setTimeout(() => {
       this.$refs.mapRef.$on("center_changed", e => {
+        let address_origin = {
+          address_latitude: e.lat(),
+          address_longitude: e.lng()
+        };
         let origin = {
           latitude: e.lat(),
           longitude: e.lng()
         };
         this.currentShops = sortByDistance(
-          origin,
+          address_origin,
           this.currentShops,
-          option
+          address_option
         ).splice(0, 100);
         this.mapPins = sortByDistance(
           origin,
