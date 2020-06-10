@@ -230,6 +230,8 @@ export default {
   watch: {
     $route: {
       handler: function() {
+        this.mapPins = this.filteredShopsForMap;
+        this.currentShops = this.filteredShops;
         const firstShop = this.filteredShops.find(v => v.latitude);
         if (this.$route.name === "Home") {
           navigator.geolocation.getCurrentPosition(
