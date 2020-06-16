@@ -221,14 +221,13 @@ export default {
       });
     },
     keyword() {
-      return this.$store.getters.keyword;
+      return this.$store.state.keyword;
     }
   },
   watch: {
     keyword(val) {
       let searchShops = [];
       let searchShopsMap = [];
-      console.log("search");
       if (!val) {
         searchShopsMap = this.filteredShopsForMap;
         searchShops = this.filteredShops;
@@ -290,17 +289,6 @@ export default {
 
     this.mapPins = this.filteredShopsForMap;
     this.currentShops = this.filteredShops;
-    // this.currentShops.forEach(e => {
-    //   Object.keys(e).forEach(k => {
-    //     if (k === "address_latitude") {
-    //       e["latitude"] = e.address_latitude;
-    //     } else if (k === "address_longitude") {
-    //       e["longitude"] = e.address_longitude;
-    //     } else {
-    //       return false;
-    //     }
-    //   });
-    // });
 
     // sort shops
     const sortByDistance = require("sort-by-distance");
