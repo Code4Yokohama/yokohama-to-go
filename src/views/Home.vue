@@ -17,7 +17,7 @@
           :id="trimURI(shop['@id'])"
           :key="shop['@id']"
           class="shop_wrapper"
-          @click="handleShopPoint(shop.name)"
+          @click="handleShopPoint(shop)"
         >
           <shop-item :shop="shop" />
         </div>
@@ -66,7 +66,9 @@
           </router-link>
         </GmapInfoWindow>
       </GmapMap>
-      <div v-if="showNotice" class="not_map_pin">{{ `${clickedShop.name}の地図情報はありません` }}</div>
+      <div v-if="showNotice" class="not_map_pin">
+        {{ `${clickedShop.name}の地図情報はありません` }}
+      </div>
     </div>
   </div>
 </template>
@@ -223,8 +225,11 @@ export default {
     keyword() {
       return this.$store.state.keyword;
     },
-    showNotice(){
-      return (!this.clickedShop.latitude || !this.clickedShop.longitude) && this.clickedShop.name
+    showNotice() {
+      return (
+        (!this.clickedShop.latitude || !this.clickedShop.longitude) &&
+        this.clickedShop.name
+      );
     }
   },
   watch: {
@@ -365,36 +370,38 @@ export default {
         VueScrollTo.scrollTo("#" + this.trimURI(shop["@id"]));
       }
     },
-    handleShopPoint(name) {
-      this.shops = this.shops.map(function(v) {
-        v.zIndex = null;
-        v.animation = null;
-        return v
-      });
+    handleShopPoint(shop) {
       let centerPoint = null;
-      const clickedShop = this.shops.find(v => v.name === name);
-      if (!clickedShop.latitude && !clickedShop.longitude) {
-        clickedShop.zIndex = null;
-        clickedShop.animation = null;
-        centerPoint = {
-          lat: Number(clickedShop.address_latitude),
-          lng: Number(clickedShop.address_longitude)
-        };
-      } else {
-        clickedShop.animation = 1;
-        clickedShop.zIndex = 100;
-        centerPoint = {
-          lat: clickedShop.latitude,
-          lng: clickedShop.longitude
-        };
-      }
+      this.shops.forEach(v => {
+        if (v["@id"] === shop["@id"]) {
+          const clickedShop = v;
+          if (!clickedShop.latitude && !clickedShop.longitude) {
+            centerPoint = {
+              lat: Number(clickedShop.address_latitude),
+              lng: Number(clickedShop.address_longitude)
+            };
+          } else {
+            clickedShop.animation = 1;
+            clickedShop.zIndex = 100;
+            centerPoint = {
+              lat: clickedShop.latitude,
+              lng: clickedShop.longitude
+            };
+          }
+          this.clickedShop = clickedShop;
+          setTimeout(() => {
+            this.mapPins.forEach((v2, i) => {
+              if (v2["@id"] === clickedShop["@id"]) {
+                this.$set(this.mapPins, i, Object.assign(v2, { animation: 0 }));
+              }
+            });
+          }, 1400);
+        } else {
+          v.zIndex = null;
+          v.animation = null;
+        }
+      });
       this.currentLocation = centerPoint;
-      if (clickedShop) {
-        this.clickedShop = clickedShop
-        setTimeout(() => {
-          this.clickedShop = {}
-        }, 1500)
-      }
     }
   }
 };
