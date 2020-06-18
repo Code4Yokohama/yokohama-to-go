@@ -43,7 +43,7 @@
             url: '/images/active_pin.png',
             scaledSize: { width: 50, height: 50, f: 'px', b: 'px' }
           }"
-          :z-index="shop.zindex"
+          :z-index="shop.zIndex"
           :animation="shop.animation"
           @click="toggleInfoWindow(shop, index)"
         />
@@ -66,7 +66,7 @@
           </router-link>
         </GmapInfoWindow>
       </GmapMap>
-      <div v-if="notMapData" class="not_map_pin">{{ notMapData }}</div>
+      <div v-if="showNotice" class="not_map_pin">{{ `${clickedShop.name}の地図情報はありません` }}</div>
     </div>
   </div>
 </template>
@@ -97,7 +97,7 @@ export default {
     shopName: "",
     currentShopId: "",
     isMobile: false,
-    notMapData: false,
+    clickedShop: {},
     mapPins: null,
     currentShops: [],
     areaCenter: {
@@ -222,6 +222,9 @@ export default {
     },
     keyword() {
       return this.$store.state.keyword;
+    },
+    showNotice(){
+      return (!this.clickedShop.latitude || !this.clickedShop.longitude) && this.clickedShop.name
     }
   },
   watch: {
@@ -363,36 +366,34 @@ export default {
       }
     },
     handleShopPoint(name) {
-      this.shops.map(function(v) {
-        v.zindex = null;
+      this.shops = this.shops.map(function(v) {
+        v.zIndex = null;
         v.animation = null;
+        return v
       });
       let centerPoint = null;
-      let notMapData = "";
-      const findShop = this.shops.find(v => v.name === name);
-      if (!findShop.latitude && !findShop.longitude) {
-        findShop.zindex = null;
-        findShop.animation = null;
+      const clickedShop = this.shops.find(v => v.name === name);
+      if (!clickedShop.latitude && !clickedShop.longitude) {
+        clickedShop.zIndex = null;
+        clickedShop.animation = null;
         centerPoint = {
-          lat: Number(findShop.address_latitude),
-          lng: Number(findShop.address_longitude)
+          lat: Number(clickedShop.address_latitude),
+          lng: Number(clickedShop.address_longitude)
         };
-        notMapData = findShop.name + "の地図情報はありません";
       } else {
-        findShop.animation = 1;
-        findShop.zindex = 100;
+        clickedShop.animation = 1;
+        clickedShop.zIndex = 100;
         centerPoint = {
-          lat: findShop.latitude,
-          lng: findShop.longitude
+          lat: clickedShop.latitude,
+          lng: clickedShop.longitude
         };
-        notMapData = false;
       }
       this.currentLocation = centerPoint;
-      this.notMapData = notMapData;
-      if (this.notMapData) {
+      if (clickedShop) {
+        this.clickedShop = clickedShop
         setTimeout(() => {
-          this.notMapData = false;
-        }, 1500);
+          this.clickedShop = {}
+        }, 1500)
       }
     }
   }
