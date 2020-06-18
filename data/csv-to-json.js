@@ -66,8 +66,8 @@ async function updateShops() {
         .map(v => v.trim());
     }
 
-    if (shops[i]["店舗住所・区名"]) {
-      shop_reformat["areaServed"] = shops[i]["店舗住所・区名"];
+    if (shops[i]["商店会"]) {
+      shop_reformat["areaServed"] = shops[i]["商店会"];
     }
 
     if (
@@ -138,6 +138,14 @@ async function updateShops() {
           });
         }
       }
+    }
+
+    if (shops[i]["大まかな緯度経度"].indexOf(",") > -1) {
+      const latitude_longitude = shops[i]["大まかな緯度経度"].split(
+        ","
+      );
+      shop_reformat["address_latitude"] = Number(latitude_longitude[0].trim());
+      shop_reformat["address_longitude"] = Number(latitude_longitude[1].trim());
     }
 
     shops_reformat.push(shop_reformat);

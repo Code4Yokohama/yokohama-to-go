@@ -57,7 +57,7 @@ async function updateShopsCSV() {
       mail: "",
       name: v["店舗名(正式名称)"],
       area: v["店舗住所・区名"],
-      group: "",
+      group: v["商店会"],
       address1: v["店舗住所・区以降"],
       address2: v["店舗住所・建物名称など"],
       longLat: v["地図上の座標（緯度・経度）"],
