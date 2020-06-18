@@ -266,7 +266,7 @@ export default {
           );
         }
         if (this.$route.params.area) {
-          let getArea = this.areaCenter[this.$route.params.area];
+          const getArea = this.areaCenter[this.$route.params.area];
           this.currentLocation = {
             lat: getArea.lat,
             lng: getArea.lng
@@ -300,7 +300,7 @@ export default {
       yName: "address_latitude",
       xName: "address_longitude"
     };
-    let origin = {
+    const origin = {
       latitude: this.currentLocation.lat,
       longitude: this.currentLocation.lng
     };
@@ -326,7 +326,7 @@ export default {
           address_latitude: e.lat(),
           address_longitude: e.lng()
         };
-        let origin = {
+        const origin = {
           latitude: e.lat(),
           longitude: e.lng()
         };
@@ -369,32 +369,31 @@ export default {
       });
       let centerPoint = null;
       let notMapData = "";
-      this.shops.map(function(shop) {
-        if (shop.name === name) {
-          if (!shop.latitude && !shop.longitude){
-            shop.zindex = null;
-            shop.animation = null;
-            centerPoint = {
-              lat: Number(shop.address_latitude),
-              lng: Number(shop.address_longitude)
-            };
-            notMapData = shop.name + "の地図情報はありません";
-          } else {
-            shop.animation = 1;
-            shop.zindex = 100;
-            centerPoint = {
-              lat: shop.latitude,
-              lng: shop.longitude
-            };
-            notMapData = false;
-          }
-        }
-      });
+      const findShop = this.shops.find(v => v.name === name);
+      if (!findShop.latitude && !findShop.longitude) {
+        findShop.zindex = null;
+        findShop.animation = null;
+        centerPoint = {
+          lat: Number(findShop.address_latitude),
+          lng: Number(findShop.address_longitude)
+        };
+        notMapData = findShop.name + "の地図情報はありません";
+      } else {
+        findShop.animation = 1;
+        findShop.zindex = 100;
+        centerPoint = {
+          lat: findShop.latitude,
+          lng: findShop.longitude
+        };
+        notMapData = false;
+      }
       this.currentLocation = centerPoint;
       this.notMapData = notMapData;
-      setTimeout(() => {
-        this.notMapData = false;
-      }, 1500);
+      if (this.notMapData) {
+        setTimeout(() => {
+          this.notMapData = false;
+        }, 1500);
+      }
     }
   }
 };
