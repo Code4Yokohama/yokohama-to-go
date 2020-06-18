@@ -17,7 +17,7 @@
           :id="trimURI(shop['@id'])"
           :key="shop['@id']"
           class="shop_wrapper"
-          @click="handleShopPoint(shop.name)"
+          @click="handleShopPoint(shop)"
         >
           <shop-item :shop="shop" />
         </div>
@@ -43,7 +43,7 @@
             url: '/images/active_pin.png',
             scaledSize: { width: 50, height: 50, f: 'px', b: 'px' }
           }"
-          :z-index="shop.zindex"
+          :z-index="shop.zIndex"
           :animation="shop.animation"
           @click="toggleInfoWindow(shop, index)"
         />
@@ -66,7 +66,9 @@
           </router-link>
         </GmapInfoWindow>
       </GmapMap>
-      <div v-if="notMapData" class="not_map_pin">{{ notMapData }}</div>
+      <div v-if="showNotice" class="not_map_pin">
+        {{ `${clickedShop.name}の地図情報はありません` }}
+      </div>
     </div>
   </div>
 </template>
@@ -97,7 +99,7 @@ export default {
     shopName: "",
     currentShopId: "",
     isMobile: false,
-    notMapData: false,
+    clickedShop: {},
     mapPins: null,
     currentShops: [],
     areaCenter: {
@@ -222,6 +224,12 @@ export default {
     },
     keyword() {
       return this.$store.state.keyword;
+    },
+    showNotice() {
+      return (
+        (!this.clickedShop.latitude || !this.clickedShop.longitude) &&
+        this.clickedShop.name
+      );
     }
   },
   watch: {
@@ -362,38 +370,38 @@ export default {
         VueScrollTo.scrollTo("#" + this.trimURI(shop["@id"]));
       }
     },
-    handleShopPoint(name) {
-      this.shops.map(function(v) {
-        v.zindex = null;
-        v.animation = null;
-      });
+    handleShopPoint(shop) {
       let centerPoint = null;
-      let notMapData = "";
-      const findShop = this.shops.find(v => v.name === name);
-      if (!findShop.latitude && !findShop.longitude) {
-        findShop.zindex = null;
-        findShop.animation = null;
-        centerPoint = {
-          lat: Number(findShop.address_latitude),
-          lng: Number(findShop.address_longitude)
-        };
-        notMapData = findShop.name + "の地図情報はありません";
-      } else {
-        findShop.animation = 1;
-        findShop.zindex = 100;
-        centerPoint = {
-          lat: findShop.latitude,
-          lng: findShop.longitude
-        };
-        notMapData = false;
-      }
+      this.shops.forEach(v => {
+        if (v["@id"] === shop["@id"]) {
+          const clickedShop = v;
+          if (!clickedShop.latitude && !clickedShop.longitude) {
+            centerPoint = {
+              lat: Number(clickedShop.address_latitude),
+              lng: Number(clickedShop.address_longitude)
+            };
+          } else {
+            clickedShop.animation = 1;
+            clickedShop.zIndex = 100;
+            centerPoint = {
+              lat: clickedShop.latitude,
+              lng: clickedShop.longitude
+            };
+          }
+          this.clickedShop = clickedShop;
+          setTimeout(() => {
+            this.mapPins.forEach((v2, i) => {
+              if (v2["@id"] === clickedShop["@id"]) {
+                this.$set(this.mapPins, i, Object.assign(v2, { animation: 0 }));
+              }
+            });
+          }, 1400);
+        } else {
+          v.zIndex = null;
+          v.animation = null;
+        }
+      });
       this.currentLocation = centerPoint;
-      this.notMapData = notMapData;
-      if (this.notMapData) {
-        setTimeout(() => {
-          this.notMapData = false;
-        }, 1500);
-      }
     }
   }
 };
