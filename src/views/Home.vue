@@ -13,11 +13,11 @@
       <search-item v-if="showSearch" />
       <div class="inner">
         <div
-          v-for="shop in filteredShops"
+          v-for="shop in currentShops"
           :id="trimURI(shop['@id'])"
           :key="shop['@id']"
           class="shop_wrapper"
-          @click="handleShopPoint(shop.name)"
+          @click="handleShopPoint(shop)"
         >
           <shop-item :shop="shop" />
         </div>
@@ -33,7 +33,7 @@
         style="width: 100%; height: 100%"
       >
         <GmapMarker
-          v-for="(shop, index) in filteredShopsForMap"
+          v-for="(shop, index) in mapPins"
           :key="index"
           :position="{
             lat: Number(shop.latitude),
@@ -43,7 +43,7 @@
             url: '/images/active_pin.png',
             scaledSize: { width: 50, height: 50, f: 'px', b: 'px' }
           }"
-          :z-index="shop.zindex"
+          :z-index="shop.zIndex"
           :animation="shop.animation"
           @click="toggleInfoWindow(shop, index)"
         />
@@ -66,7 +66,9 @@
           </router-link>
         </GmapInfoWindow>
       </GmapMap>
-      <div v-if="notMapData" class="not_map_pin">{{ notMapData }}</div>
+      <div v-if="showNotice" class="not_map_pin">
+        {{ `${clickedShop.name}の地図情報はありません` }}
+      </div>
     </div>
   </div>
 </template>
@@ -97,7 +99,103 @@ export default {
     shopName: "",
     currentShopId: "",
     isMobile: false,
-    notMapData: false
+    clickedShop: {},
+    mapPins: null,
+    currentShops: [],
+    areaCenter: {
+      ["市が尾＆藤が丘"]: {
+        lat: 35.545578,
+        lng: 139.534954
+      },
+      ["あざみ野"]: {
+        lat: 35.568663,
+        lng: 139.553451
+      },
+      ["奈良＆鴨志田"]: {
+        lat: 35.562884,
+        lng: 139.490428
+      },
+      ["青葉台"]: {
+        lat: 35.543035,
+        lng: 139.51674
+      },
+      ["たまプラーザ"]: {
+        lat: 35.577541,
+        lng: 139.558397
+      },
+      ["青葉区"]: {
+        lat: 35.552975,
+        lng: 139.536922
+      },
+      ["神奈川区"]: {
+        lat: 35.477414,
+        lng: 139.629113
+      },
+      ["金沢区"]: {
+        lat: 35.33814,
+        lng: 139.624496
+      },
+      ["中区"]: {
+        lat: 35.444759,
+        lng: 139.642172
+      },
+      ["戸塚区"]: {
+        lat: 35.400032,
+        lng: 139.533476
+      },
+      ["鶴見区"]: {
+        lat: 35.508482,
+        lng: 139.682424
+      },
+      ["港北区"]: {
+        lat: 35.519044,
+        lng: 139.633067
+      },
+      ["保土ヶ谷区"]: {
+        lat: 35.460017,
+        lng: 139.595996
+      },
+      ["西区"]: {
+        lat: 35.453565,
+        lng: 139.616815
+      },
+      ["南区"]: {
+        lat: 35.43441,
+        lng: 139.627633
+      },
+      ["磯子区"]: {
+        lat: 35.402424,
+        lng: 139.618539
+      },
+      ["栄区"]: {
+        lat: 35.364672,
+        lng: 139.553806
+      },
+      ["港南区"]: {
+        lat: 35.400991,
+        lng: 139.592535
+      },
+      ["都筑区"]: {
+        lat: 35.544868,
+        lng: 139.570612
+      },
+      ["瀬谷区"]: {
+        lat: 35.466246,
+        lng: 139.498819
+      },
+      ["旭区"]: {
+        lat: 35.474813,
+        lng: 139.544815
+      },
+      ["泉区"]: {
+        lat: 35.417832,
+        lng: 139.488696
+      },
+      ["緑区"]: {
+        lat: 35.512396,
+        lng: 139.537811
+      }
+    }
   }),
   computed: {
     headerTitle: function() {
@@ -106,29 +204,84 @@ export default {
     },
     filteredShops: function() {
       const target = this.$route.params.area;
-      let shopsArray = [];
       if (target) {
         if (this.$route.name === "area_index") {
-          shopsArray = this.shops.filter(v => {
+          return this.shops.filter(v => {
             return v.address && v.address.addressLocality === target;
           });
         } else if (this.$route.name === "area_served_index") {
-          shopsArray = this.shops.filter(v => {
+          return this.shops.filter(v => {
             return v.areaServed === target;
           });
         }
-      } else {
-        shopsArray = this.shops;
       }
-      if (!this.$store.state.keyword) return shopsArray;
-      return shopsArray.filter(v => {
-        return v.name.indexOf(this.$store.state.keyword) > -1;
-      });
+      return this.shops;
     },
     filteredShopsForMap: function() {
       return this.filteredShops.filter(v => {
         return v.latitude && v.longitude;
       });
+    },
+    keyword() {
+      return this.$store.state.keyword;
+    },
+    showNotice() {
+      return (
+        (!this.clickedShop.latitude || !this.clickedShop.longitude) &&
+        this.clickedShop.name
+      );
+    }
+  },
+  watch: {
+    keyword(val) {
+      let searchShops = [];
+      let searchShopsMap = [];
+      if (!val) {
+        searchShopsMap = this.filteredShopsForMap;
+        searchShops = this.filteredShops;
+      } else {
+        searchShopsMap = this.filteredShopsForMap.filter(v => {
+          return v.name.indexOf(val) > -1;
+        });
+        searchShops = this.filteredShops.filter(v => {
+          return v.name.indexOf(val) > -1;
+        });
+      }
+      this.currentShops = searchShops;
+      this.mapPins = searchShopsMap;
+    },
+    $route: {
+      handler: function() {
+        this.mapPins = this.filteredShopsForMap;
+        this.currentShops = this.filteredShops;
+        const firstShop = this.filteredShops.find(v => v.latitude);
+        if (this.$route.name === "Home") {
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              this.currentLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+              };
+            },
+            () => {
+              if (firstShop && firstShop.latitude) {
+                this.currentLocation = {
+                  lat: Number(firstShop.latitude),
+                  lng: Number(firstShop.longitude)
+                };
+              }
+            }
+          );
+        }
+        if (this.$route.params.area) {
+          const getArea = this.areaCenter[this.$route.params.area];
+          this.currentLocation = {
+            lat: getArea.lat,
+            lng: getArea.lng
+          };
+        }
+      },
+      immediate: true
     }
   },
   async created() {
@@ -141,13 +294,62 @@ export default {
     }
     const shops = await this.$http.get("data/shops.json");
     this.shops = shops.data;
-    const firstShop = this.filteredShops.find(v => v.latitude);
-    if (firstShop && firstShop.latitude) {
-      this.currentLocation = {
-        lat: Number(firstShop.latitude),
-        lng: Number(firstShop.longitude)
-      };
-    }
+
+    this.mapPins = this.filteredShopsForMap;
+    this.currentShops = this.filteredShops;
+
+    // sort shops
+    const sortByDistance = require("sort-by-distance");
+    let address_origin = {
+      address_latitude: this.currentLocation.lat,
+      address_longitude: this.currentLocation.lng
+    };
+    const address_option = {
+      yName: "address_latitude",
+      xName: "address_longitude"
+    };
+    const origin = {
+      latitude: this.currentLocation.lat,
+      longitude: this.currentLocation.lng
+    };
+    const option = {
+      yName: "latitude",
+      xName: "longitude"
+    };
+    this.currentShops = sortByDistance(
+      address_origin,
+      this.currentShops,
+      address_option
+    ).splice(0, 100);
+    this.mapPins = sortByDistance(
+      origin,
+      this.filteredShopsForMap,
+      option
+    ).splice(0, 100);
+
+    // sort shops when move map
+    setTimeout(() => {
+      this.$refs.mapRef.$on("center_changed", e => {
+        let address_origin = {
+          address_latitude: e.lat(),
+          address_longitude: e.lng()
+        };
+        const origin = {
+          latitude: e.lat(),
+          longitude: e.lng()
+        };
+        this.currentShops = sortByDistance(
+          address_origin,
+          this.currentShops,
+          address_option
+        ).splice(0, 100);
+        this.mapPins = sortByDistance(
+          origin,
+          this.filteredShopsForMap,
+          option
+        ).splice(0, 100);
+      });
+    }, 100);
   },
   methods: {
     trimURI(str) {
@@ -168,36 +370,38 @@ export default {
         VueScrollTo.scrollTo("#" + this.trimURI(shop["@id"]));
       }
     },
-    handleShopPoint(name) {
-      this.shops.map(function(v) {
-        v.zindex = null;
-        v.animation = null;
-      });
+    handleShopPoint(shop) {
       let centerPoint = null;
-      let notMapData = "";
-      this.shops.map(function(shop) {
-        if (shop.name === name) {
-          if (shop.latitude && shop.longitude) {
-            shop.animation = 1;
-            shop.zindex = 100;
+      this.shops.forEach(v => {
+        if (v["@id"] === shop["@id"]) {
+          const clickedShop = v;
+          if (!clickedShop.latitude && !clickedShop.longitude) {
             centerPoint = {
-              lat: shop.latitude,
-              lng: shop.longitude
+              lat: Number(clickedShop.address_latitude),
+              lng: Number(clickedShop.address_longitude)
             };
-            notMapData = false;
           } else {
-            shop.zindex = null;
-            shop.animation = null;
+            clickedShop.animation = 1;
+            clickedShop.zIndex = 100;
             centerPoint = {
-              lat: Number(shop.latitude),
-              lng: Number(shop.longitude)
+              lat: clickedShop.latitude,
+              lng: clickedShop.longitude
             };
-            notMapData = shop.name + "の地図情報はありません";
           }
+          this.clickedShop = clickedShop;
+          setTimeout(() => {
+            this.mapPins.forEach((v2, i) => {
+              if (v2["@id"] === clickedShop["@id"]) {
+                this.$set(this.mapPins, i, Object.assign(v2, { animation: 0 }));
+              }
+            });
+          }, 1400);
+        } else {
+          v.zIndex = null;
+          v.animation = null;
         }
       });
       this.currentLocation = centerPoint;
-      this.notMapData = notMapData;
     }
   }
 };
