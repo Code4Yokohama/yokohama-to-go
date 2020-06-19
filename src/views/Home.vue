@@ -25,9 +25,9 @@
     </div>
     <div v-if="$store.state.displayType === 'list'" class="home__right">
       <GmapMap
-        v-if="currentLocation"
+        v-if="center"
         ref="mapRef"
-        :center="currentLocation"
+        :center="center"
         :zoom="12"
         :options="{ draggableCursor: 'default' }"
         style="width: 100%; height: 100%"
@@ -89,7 +89,7 @@ export default {
   data: () => ({
     showMap: true,
     showSearch: false,
-    currentLocation: null,
+    center: { lat: 35.465943, lng: 139.622356 }, // 横浜駅
     shops: [],
     infoWindowPosition: {
       lat: 0,
@@ -258,14 +258,14 @@ export default {
         if (this.$route.name === "Home") {
           navigator.geolocation.getCurrentPosition(
             position => {
-              this.currentLocation = {
+              this.center = {
                 lat: position.coords.latitude,
                 lng: position.coords.longitude
               };
             },
             () => {
               if (firstShop && firstShop.latitude) {
-                this.currentLocation = {
+                this.center = {
                   lat: Number(firstShop.latitude),
                   lng: Number(firstShop.longitude)
                 };
@@ -275,7 +275,7 @@ export default {
         }
         if (this.$route.params.area) {
           const getArea = this.areaCenter[this.$route.params.area];
-          this.currentLocation = {
+          this.center = {
             lat: getArea.lat,
             lng: getArea.lng
           };
@@ -301,16 +301,16 @@ export default {
     // sort shops
     const sortByDistance = require("sort-by-distance");
     let address_origin = {
-      address_latitude: this.currentLocation.lat,
-      address_longitude: this.currentLocation.lng
+      address_latitude: this.center.lat,
+      address_longitude: this.center.lng
     };
     const address_option = {
       yName: "address_latitude",
       xName: "address_longitude"
     };
     const origin = {
-      latitude: this.currentLocation.lat,
-      longitude: this.currentLocation.lng
+      latitude: this.center.lat,
+      longitude: this.center.lng
     };
     const option = {
       yName: "latitude",
@@ -401,7 +401,7 @@ export default {
           v.animation = null;
         }
       });
-      this.currentLocation = centerPoint;
+      this.center = centerPoint;
     }
   }
 };
