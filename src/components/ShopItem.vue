@@ -310,7 +310,6 @@ export default {
       return num;
     },
     shareFacebook(name) {
-      const appID = process.env.VUE_APP_FACEBOOK_APP_ID;
       const url = this.$router.resolve({
         name: "shop_show",
         params: {
@@ -318,11 +317,9 @@ export default {
         }
       }).href;
       const targetUrl =
-        "https://www.facebook.com/dialog/share?app_id=" +
-        appID +
-        "&href=" +
+        "https://www.facebook.com/dialog/share.php?u=?" +
         encodeURIComponent(location.origin + url);
-      window.open(targetUrl, "Twitter", "toolbar=yes");
+      window.open(targetUrl, "Facebook", "toolbar=yes");
     }
   }
 };
