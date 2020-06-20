@@ -254,7 +254,6 @@ export default {
       handler: function() {
         this.mapPins = this.filteredShopsForMap;
         this.currentShops = this.filteredShops;
-        const firstShop = this.filteredShops.find(v => v.latitude);
         if (this.$route.name === "Home") {
           navigator.geolocation.getCurrentPosition(
             position => {
@@ -264,6 +263,7 @@ export default {
               };
             },
             () => {
+              const firstShop = this.filteredShops.find(v => v.latitude);
               if (firstShop && firstShop.latitude) {
                 this.center = {
                   lat: Number(firstShop.latitude),
