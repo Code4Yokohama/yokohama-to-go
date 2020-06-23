@@ -102,6 +102,7 @@ export default {
     clickedShop: {},
     mapPins: null,
     currentShops: [],
+    showNotice: false,
     areaCenter: {
       ["市が尾＆藤が丘"]: {
         lat: 35.545578,
@@ -224,12 +225,6 @@ export default {
     },
     keyword() {
       return this.$store.state.keyword;
-    },
-    showNotice() {
-      return (
-        (!this.clickedShop.latitude || !this.clickedShop.longitude) &&
-        this.clickedShop.name
-      );
     }
   },
   watch: {
@@ -380,6 +375,10 @@ export default {
               lat: Number(clickedShop.address_latitude),
               lng: Number(clickedShop.address_longitude)
             };
+            if (this.showNotice) {
+              this.showNotice = false;
+            }
+            this.showNotice = true;
           } else {
             clickedShop.animation = 1;
             clickedShop.zIndex = 100;
@@ -387,6 +386,11 @@ export default {
               lat: clickedShop.latitude,
               lng: clickedShop.longitude
             };
+          }
+          if (this.showNotice) {
+            setTimeout(() => {
+              this.showNotice = false;
+            }, 5000);
           }
           this.clickedShop = clickedShop;
           setTimeout(() => {
@@ -484,28 +488,11 @@ export default {
       left: 50%;
       padding: 2rem;
       transform: translate(-50%, -50%);
-      animation-name: fadeOut;
-      animation-duration: 5s;
-      animation-fill-mode: forwards;
       border-radius: 0.4rem;
       background: $white;
     }
   }
 
-  @keyframes fadeOut {
-    0% {
-      display: block;
-      opacity: 100;
-    }
-    80% {
-      opacity: 100;
-    }
-    100% {
-      display: none;
-      opacity: 0;
-      z-index: -1;
-    }
-  }
   @include mediaMobile {
     flex-direction: column;
     &__left {
