@@ -1,0 +1,50 @@
+[
+    {
+        "@id": "https://to-go.yokohama/shop/0",
+        "@context": "http://schema.org",
+        "@type": "Restaurant",
+        "name": "中国酒菜さいゆうき",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "青葉区",
+            "streetAddress": "藤が丘2-5-14"
+        },
+        "telephone": "0459736688",
+        "url": "https://www.sai-saiyuki.com/free/omochikaeri",
+        "servesCuisine": [
+            "アジア・エスニック料理",
+            "中華",
+            "創作料理・多国籍料理"
+        ],
+        "areaServed": "市が尾＆藤が丘",
+        "makesOffer": [
+            {
+                "@type": "Offer",
+                "name": "テイクアウト"
+            }
+        ],
+        "hasMenu": {
+            "@type": "Menu",
+            "description": "麻婆豆腐ひとつからテイクアウト出来ます。お気軽にご利用下さい。",
+            "hasMenuItem": [
+                {
+                    "@type": "MenuItem",
+                    "name": "ランチセット弁当（スープ、浅漬けザーサイ、メイン、ご飯）6種類あります。",
+                    "price": "1100"
+                },
+                {
+                    "@type": "MenuItem",
+                    "name": "単品料理　『さいゆうきの麻婆豆腐』お子様用に甘口出来ます。",
+                    "price": "1100"
+                },
+                {
+                    "@type": "MenuItem",
+                    "name": "お惣菜　『浅漬けザーサイ』2個買うと3個目プレゼント！極太メンマとの組み合わせ自由です！",
+                    "price": "480"
+                }
+            ]
+        },
+        "address_latitude": 35.54146,
+        "address_longitude": 139.526663
+    }
+]
