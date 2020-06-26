@@ -102,6 +102,7 @@ export default {
     clickedShop: {},
     mapPins: null,
     currentShops: [],
+    showNotice: false,
     areaCenter: {
       ["市が尾＆藤が丘"]: {
         lat: 35.545578,
@@ -218,18 +219,12 @@ export default {
       return this.shops;
     },
     filteredShopsForMap: function() {
-      return this.filteredShops.filter(v => {
+      return this.currentShops.filter(v => {
         return v.latitude && v.longitude;
       });
     },
     keyword() {
       return this.$store.state.keyword;
-    },
-    showNotice() {
-      return (
-        (!this.clickedShop.latitude || !this.clickedShop.longitude) &&
-        this.clickedShop.name
-      );
     }
   },
   watch: {
@@ -252,9 +247,8 @@ export default {
     },
     $route: {
       handler: function() {
-        this.mapPins = this.filteredShopsForMap;
         this.currentShops = this.filteredShops;
-        const firstShop = this.filteredShops.find(v => v.latitude);
+        this.mapPins = this.filteredShopsForMap;
         if (this.$route.name === "Home") {
           navigator.geolocation.getCurrentPosition(
             position => {
@@ -264,6 +258,7 @@ export default {
               };
             },
             () => {
+              const firstShop = this.filteredShops.find(v => v.latitude);
               if (firstShop && firstShop.latitude) {
                 this.center = {
                   lat: Number(firstShop.latitude),
@@ -320,12 +315,12 @@ export default {
       address_origin,
       this.currentShops,
       address_option
-    ).splice(0, 100);
+    ).splice(0, 200);
     this.mapPins = sortByDistance(
       origin,
       this.filteredShopsForMap,
       option
-    ).splice(0, 100);
+    ).splice(0, 200);
 
     // sort shops when move map
     setTimeout(() => {
@@ -342,12 +337,12 @@ export default {
           address_origin,
           this.currentShops,
           address_option
-        ).splice(0, 100);
+        ).splice(0, 200);
         this.mapPins = sortByDistance(
           origin,
           this.filteredShopsForMap,
           option
-        ).splice(0, 100);
+        ).splice(0, 200);
       });
     }, 100);
   },
@@ -361,7 +356,6 @@ export default {
         lat: Number(shop.latitude),
         lng: Number(shop.longitude)
       };
-
       if (this.currentShopId === shop["@id"]) {
         this.infoWindowOpen = !this.infoWindowOpen;
       } else {
@@ -380,6 +374,10 @@ export default {
               lat: Number(clickedShop.address_latitude),
               lng: Number(clickedShop.address_longitude)
             };
+            if (this.showNotice) {
+              this.showNotice = false;
+            }
+            this.showNotice = true;
           } else {
             clickedShop.animation = 1;
             clickedShop.zIndex = 100;
@@ -387,6 +385,11 @@ export default {
               lat: clickedShop.latitude,
               lng: clickedShop.longitude
             };
+          }
+          if (this.showNotice) {
+            setTimeout(() => {
+              this.showNotice = false;
+            }, 5000);
           }
           this.clickedShop = clickedShop;
           setTimeout(() => {
@@ -484,28 +487,11 @@ export default {
       left: 50%;
       padding: 2rem;
       transform: translate(-50%, -50%);
-      animation-name: fadeOut;
-      animation-duration: 5s;
-      animation-fill-mode: forwards;
       border-radius: 0.4rem;
       background: $white;
     }
   }
 
-  @keyframes fadeOut {
-    0% {
-      display: block;
-      opacity: 100;
-    }
-    80% {
-      opacity: 100;
-    }
-    100% {
-      display: none;
-      opacity: 0;
-      z-index: -1;
-    }
-  }
   @include mediaMobile {
     flex-direction: column;
     &__left {

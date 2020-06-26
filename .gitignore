@@ -131,7 +131,8 @@ sketch
 
 # End of https://www.gitignore.io/api/vue,node,firebase
 
-data/*.csv
-data/*.json
+data/shops.csv
+data/shops_updated.csv
+data/takeoutmap.json
 !public/data/
 !data/takeoutyokohama.csv
