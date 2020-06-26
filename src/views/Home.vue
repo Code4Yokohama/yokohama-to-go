@@ -219,7 +219,7 @@ export default {
       return this.shops;
     },
     filteredShopsForMap: function() {
-      return this.filteredShops.filter(v => {
+      return this.currentShops.filter(v => {
         return v.latitude && v.longitude;
       });
     },
@@ -247,8 +247,8 @@ export default {
     },
     $route: {
       handler: function() {
-        this.mapPins = this.filteredShopsForMap;
         this.currentShops = this.filteredShops;
+        this.mapPins = this.filteredShopsForMap;
         if (this.$route.name === "Home") {
           navigator.geolocation.getCurrentPosition(
             position => {
@@ -315,12 +315,12 @@ export default {
       address_origin,
       this.currentShops,
       address_option
-    ).splice(0, 100);
+    ).splice(0, 200);
     this.mapPins = sortByDistance(
       origin,
       this.filteredShopsForMap,
       option
-    ).splice(0, 100);
+    ).splice(0, 200);
 
     // sort shops when move map
     setTimeout(() => {
@@ -337,12 +337,12 @@ export default {
           address_origin,
           this.currentShops,
           address_option
-        ).splice(0, 100);
+        ).splice(0, 200);
         this.mapPins = sortByDistance(
           origin,
           this.filteredShopsForMap,
           option
-        ).splice(0, 100);
+        ).splice(0, 200);
       });
     }, 100);
   },
@@ -356,7 +356,6 @@ export default {
         lat: Number(shop.latitude),
         lng: Number(shop.longitude)
       };
-
       if (this.currentShopId === shop["@id"]) {
         this.infoWindowOpen = !this.infoWindowOpen;
       } else {
