@@ -42,7 +42,7 @@
     "jsonschema": "1.4.0",
     "prettier": "1.19.1",
     "sass": "1.41.1",
-    "sass-loader": "8.0.2",
+    "sass-loader": "12.6.0",
     "vue-template-compiler": "2.6.14"
   }
 }
