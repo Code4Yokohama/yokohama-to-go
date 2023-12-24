@@ -21,7 +21,7 @@
     "fuse.js": "6.4.6",
     "imi-enrichment-address": "https://info.gbiz.go.jp/tools/imi_tools/resource/imi-enrichment-address/imi-enrichment-address-2.0.0.tgz",
     "sort-by-distance": "1.1.0",
-    "vue": "2.6.14",
+    "vue": "2.7.16",
     "vue-gtm": "3.5.0",
     "vue-router": "3.5.2",
     "vue-scrollto": "2.20.0",
@@ -43,6 +43,6 @@
     "prettier": "1.19.1",
     "sass": "1.41.1",
     "sass-loader": "8.0.2",
-    "vue-template-compiler": "2.6.14"
+    "vue-template-compiler": "2.7.16"
   }
 }
